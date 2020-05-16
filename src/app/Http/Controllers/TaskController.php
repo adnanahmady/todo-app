@@ -21,7 +21,7 @@ class TaskController extends Controller
             'owner_id' => auth('web')->id(),
             'body' => $request->get('body')
         ]);
-        event(new NewTaskDidCreateEvent(auth('web')->user(), $task));
+        broadcast(new NewTaskDidCreateEvent(auth('web')->user(), $task));
 
         return response()->json($task, 201);
     }
