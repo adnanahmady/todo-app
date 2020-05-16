@@ -13,6 +13,6 @@ use Illuminate\Support\Facades\Broadcast;
 |
 */
 
-Broadcast::channel('App.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
+Broadcast::channel('groups.{groupId}', function ($user, $groupId) {
+    return (int) $user->joinedGroups->contains((int) $groupId);
 });

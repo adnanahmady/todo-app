@@ -6,6 +6,11 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * Class: User
+ *
+ * @see Authenticatable
+ */
 class User extends Authenticatable
 {
     use Notifiable;
@@ -36,4 +41,34 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * returns users owned groups
+     *
+     * @return \App\Group
+     */
+    public function groups()
+    {
+        return $this->hasMany(Group::class, 'owner_id');
+    }
+
+    /**
+     * returns groups that user is joined in
+     *
+     * @return App\Group
+     */
+    public function joinedGroups()
+    {
+        return $this->belongsToMany(Group::class)->withTimestamps();
+    }
+
+    /**
+     * returns all users created tasks regaurdless of there group
+     *
+     * @return \App\Tasks
+     */
+    public function tasks()
+    {
+        return $this->hasMany(Task::class, 'owner_id');
+    }
 }

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Events\NewTaskDidCreateEvent;
+use App\Group;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +15,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::middleware('auth')->get('/groups/{group}', 'GroupController@show');
+
+Route::get('/new-task', function () {
+    NewTaskDidCreateEvent::dispatch(App\User::first(), 'task.'.random_int(1, 100));
+
+    return 'Done!';
 });
+
+Route::get('/tasks', 'TaskController@index');
+Route::post('/tasks', 'TaskController@store');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
