@@ -1974,6 +1974,14 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['group'],
@@ -1984,6 +1992,8 @@ __webpack_require__.r(__webpack_exports__);
     return {
       tasks: [],
       isLoading: false,
+      isTyping: undefined,
+      typingTimer: undefined,
       body: ''
     };
   },
@@ -1993,25 +2003,44 @@ __webpack_require__.r(__webpack_exports__);
     axios.get('/api/groups/' + this.group.id).then(function (response) {
       return _this.tasks = response.data;
     });
-    window.Echo["private"]('groups.' + this.group.id).listen('NewTaskDidCreateEvent', function (_ref) {
+    this.channel.listen('NewTaskDidCreateEvent', function (_ref) {
       var user = _ref.user,
           task = _ref.task;
+      _this.isTyping = undefined;
 
       _this.tasks.push(task.body);
+    }).listenForWhisper('typing', function (e) {
+      _this.isTyping = e;
+      if (_this.typingTimer) clearTimeout(_this.typingTimer);
+      _this.typingTimer = setTimeout(function () {
+        return _this.isTyping = undefined;
+      }, 3000);
     });
   },
   computed: {
     isBodyEmpty: function isBodyEmpty() {
       var body = this.body.trim();
       return body.length == 0 ? true : false;
+    },
+    typeNote: function typeNote() {
+      return this.isTyping.name + ' is typing...';
+    },
+    channel: function channel() {
+      return window.Echo["private"]('groups.' + this.group.id);
     }
   },
   methods: {
+    itIsTyping: function itIsTyping() {
+      this.channel.whisper('typing', {
+        name: window.App.user.name
+      });
+    },
     newTask: function newTask() {
       var _this2 = this;
 
       if (this.isBodyEmpty) return;
       this.isLoading = true;
+      this.isTyping = undefined;
       axios.post('/api/groups/' + this.group.id + '/tasks', {
         body: this.body
       }).then(function () {
@@ -43128,15 +43157,18 @@ var render = function() {
           attrs: { type: "text" },
           domProps: { value: _vm.body },
           on: {
-            keydown: function($event) {
-              if (
-                !$event.type.indexOf("key") &&
-                _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
-              ) {
-                return null
-              }
-              return _vm.newTask($event)
-            },
+            keydown: [
+              function($event) {
+                if (
+                  !$event.type.indexOf("key") &&
+                  _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+                ) {
+                  return null
+                }
+                return _vm.newTask($event)
+              },
+              _vm.itIsTyping
+            ],
             input: function($event) {
               if ($event.target.composing) {
                 return
@@ -43145,6 +43177,15 @@ var render = function() {
             }
           }
         })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "form-group" }, [
+        _vm.isTyping
+          ? _c("span", {
+              staticClass: "text-info",
+              domProps: { textContent: _vm._s(_vm.typeNote) }
+            })
+          : _vm._e()
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "form-group d-flex" }, [

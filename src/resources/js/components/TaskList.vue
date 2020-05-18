@@ -5,8 +5,16 @@
             <input 
                 class="form-control" 
                 v-model="body" 
-                @keydown.enter="newTask" 
+                @keydown.enter = "newTask" 
+                @keydown = "itIsTyping"
                 type="text">
+        </div>
+        <div class="form-group">
+            <span
+                class="text-info"
+                v-if="isTyping"
+                v-text="typeNote"
+            ></span>
         </div>
         <div class="form-group d-flex">
             <button 
@@ -46,6 +54,8 @@
             return {
                 tasks: [],
                 isLoading: false,
+                isTyping: undefined,
+                typingTimer: undefined,
                 body: ''
             };
         },
@@ -55,9 +65,16 @@
                 .get('/api/groups/'+this.group.id)
                 .then(response => (this.tasks = response.data));
             
-            window.Echo.private('groups.'+this.group.id)
-                .listen('NewTaskDidCreateEvent', ({user, task}) => {
+                this.channel.listen('NewTaskDidCreateEvent', ({user, task}) => {
+                    this.isTyping = undefined;
                     this.tasks.push(task.body);
+                })
+                .listenForWhisper('typing', (e) => {
+                    this.isTyping = e;
+
+                    if (this.typingTimer) clearTimeout(this.typingTimer);
+
+                    this.typingTimer = setTimeout(() => this.isTyping = undefined, 3000);
                 });
         },
 
@@ -66,13 +83,25 @@
                 const body = this.body.trim();
 
                 return (body.length == 0) ? true : false;
+            },
+
+            typeNote() {
+                return this.isTyping.name + ' is typing...';
+            },
+            
+            channel() {
+                return window.Echo.private('groups.'+this.group.id);
             }
         },
         
         methods: {
+            itIsTyping() {
+                    this.channel.whisper('typing', {name: window.App.user.name});
+            },
             newTask() {
                 if (this.isBodyEmpty) return;
                 this.isLoading = true;
+                this.isTyping = undefined;
                 axios.post('/api/groups/'+this.group.id+'/tasks', { body: this.body })
                     .then(() => {
                         this.tasks.push(this.body);
