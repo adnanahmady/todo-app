@@ -24,7 +24,7 @@ class TaskTest extends TestCase
 
         $this->assertEventDidBroadcast(
             NewTaskDidCreateEvent::class,
-            'private-groups.'.$task->group->id
+            'presence-groups.'.$task->group->id
         );
     }
 }

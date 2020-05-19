@@ -1982,6 +1982,21 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['group'],
@@ -1994,7 +2009,8 @@ __webpack_require__.r(__webpack_exports__);
       isLoading: false,
       isTyping: undefined,
       typingTimer: undefined,
-      body: ''
+      body: '',
+      members: []
     };
   },
   created: function created() {
@@ -2003,7 +2019,13 @@ __webpack_require__.r(__webpack_exports__);
     axios.get('/api/groups/' + this.group.id).then(function (response) {
       return _this.tasks = response.data;
     });
-    this.channel.listen('NewTaskDidCreateEvent', function (_ref) {
+    this.channel.here(function (users) {
+      _this.members = users;
+    }).joining(function (user) {
+      _this.members.push(user);
+    }).leaving(function (user) {
+      _this.members.splice(_this.members.indexOf(user));
+    }).listen('NewTaskDidCreateEvent', function (_ref) {
       var user = _ref.user,
           task = _ref.task;
       _this.isTyping = undefined;
@@ -2026,7 +2048,7 @@ __webpack_require__.r(__webpack_exports__);
       return this.isTyping.name + ' is typing...';
     },
     channel: function channel() {
-      return window.Echo["private"]('groups.' + this.group.id);
+      return window.Echo.join('groups.' + this.group.id);
     }
   },
   methods: {
@@ -43142,7 +43164,7 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "row" }, [
-    _c("div", { staticClass: "col" }, [
+    _c("div", { staticClass: "col col-md-8" }, [
       _c("div", { staticClass: "form-group" }, [
         _c("input", {
           directives: [
@@ -43220,6 +43242,29 @@ var render = function() {
         }),
         0
       )
+    ]),
+    _vm._v(" "),
+    _c("div", { staticClass: "col col-md-4" }, [
+      _c("div", { staticClass: "card" }, [
+        _c("div", { staticClass: "card-header" }, [
+          _c("div", { staticClass: "h4 card-title" }, [
+            _vm._v("Online Members")
+          ]),
+          _vm._v(" "),
+          _c("div", { staticClass: "card-body" }, [
+            _c(
+              "ul",
+              _vm._l(_vm.members, function(member) {
+                return _c("li", {
+                  staticClass: "text-success",
+                  domProps: { textContent: _vm._s(member.name) }
+                })
+              }),
+              0
+            )
+          ])
+        ])
+      ])
     ])
   ])
 }

@@ -14,11 +14,9 @@ use Illuminate\Support\Facades\Broadcast;
 */
 
 Broadcast::channel('groups.{groupId}', function ($user, $groupId) {
-    return (int) $user
-        ->whereHas(
-            'joinedGroups',
-            function ($query) use ($groupId) {
-                $query->where('group_id', $groupId);
-            })
-        ->exists();
+    if ($user->doesJoinedTo($groupId)) {
+        return ['name' => $user->name];
+    }
+
+    return false;
 });

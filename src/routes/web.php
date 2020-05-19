@@ -15,7 +15,9 @@ use App\Group;
 |
 */
 
-Route::middleware('auth')->get('/groups/{group}', 'GroupController@show');
+Route::middleware([
+    'auth', 'can:view,group'
+])->get('/groups/{group}', 'GroupController@show');
 
 Route::get('/new-task', function () {
     NewTaskDidCreateEvent::dispatch(App\User::first(), 'task.'.random_int(1, 100));

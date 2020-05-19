@@ -24,4 +24,15 @@ class UserTest extends TestCase
         $this->assertTrue($user->joinedGroups->contains($groups[2]->id));
         $this->assertFalse($user->joinedGroups->contains($groups[1]->id));
     }
+
+    /** @test */
+    public function it_must_checks_if_is_joined_to_group()
+    {
+        $user = factory(User::class)->create();
+        $groups = factory(Group::class, 2)->create();
+        $user->joinedGroups()->attach($groups->last());
+
+        $this->assertFalse($user->doesJoinedTo($groups->first()->id));
+        $this->assertTrue($user->doesJoinedTo($groups->last()->id));
+    }
 }

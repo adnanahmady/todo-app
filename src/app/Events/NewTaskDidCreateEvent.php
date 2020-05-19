@@ -48,7 +48,7 @@ class NewTaskDidCreateEvent implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PrivateChannel('groups.'.$this->task->group->id);
+        return new PresenceChannel('groups.'.$this->task->group->id);
     }
 
     /**

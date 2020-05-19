@@ -71,4 +71,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Task::class, 'owner_id');
     }
+
+    /**
+     * checks if user is joined to group
+     *
+     * @param int $groupId
+     *
+     * @return boolean
+     */
+    public function doesJoinedTo(int $groupId): bool
+    {
+        return $this->joinedGroups()->where('group_id', $groupId)->exists();
+    }
 }

@@ -1,6 +1,6 @@
 <template>
 <div class="row">
-    <div class="col">
+    <div class="col col-md-8">
         <div class="form-group">
             <input 
                 class="form-control" 
@@ -41,6 +41,21 @@
             ></div>
         </div>
     </div>
+    <div class="col col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <div class="h4 card-title">Online Members</div>
+                <div class="card-body">
+                    <ul>
+                        <li 
+                            class="text-success"
+                            v-for="member in members"
+                            v-text="member.name"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </template>
 
@@ -56,7 +71,8 @@
                 isLoading: false,
                 isTyping: undefined,
                 typingTimer: undefined,
-                body: ''
+                body: '',
+                members: []
             };
         },
 
@@ -65,7 +81,17 @@
                 .get('/api/groups/'+this.group.id)
                 .then(response => (this.tasks = response.data));
             
-                this.channel.listen('NewTaskDidCreateEvent', ({user, task}) => {
+            this.channel
+                .here(users => {
+                    this.members = users;
+                })
+                .joining(user => {
+                    this.members.push(user);
+                })
+                .leaving(user => {
+                    this.members.splice(this.members.indexOf(user));
+                })
+                .listen('NewTaskDidCreateEvent', ({user, task}) => {
                     this.isTyping = undefined;
                     this.tasks.push(task.body);
                 })
@@ -90,7 +116,7 @@
             },
             
             channel() {
-                return window.Echo.private('groups.'+this.group.id);
+                return window.Echo.join('groups.'+this.group.id);
             }
         },
         

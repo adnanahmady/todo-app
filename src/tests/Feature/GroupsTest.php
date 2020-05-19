@@ -16,9 +16,11 @@ class GroupsTest extends TestCase
     /** @test */
     public function when_visiting_groups_main_returns_all_tasks_to_group()
     {
+        $this->withoutExceptionHandling();
         $this->be(factory(User::class)->create());
         $group = factory(Group::class)->create();
         $tasks = factory(Task::class, 3)->create(['group_id' => $group->id]);
+        $group->joinedUsers()->attach(auth()->user());
         $nonRelatedTask = factory(Task::class)->create();
 
         $response = $this->json(
