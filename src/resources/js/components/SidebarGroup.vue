@@ -10,6 +10,15 @@
             ></a>
         </ul>
     </div>
+    <div class="card-footer">
+            <a
+                class="btn btn-primary btn-block"
+                href="/groups/create">
+                <i class="fa fa-plus" aria-hidden="true"></i>
+                <span class="ml-2">New Group</span>
+            </a>
+        </form>
+    </div>
 </div>
 </template>
 

@@ -15,6 +15,10 @@ use App\Group;
 |
 */
 
+Route::middleware('auth')->group(function () {
+    Route::get('/groups/create', 'GroupController@create')->name('groups.create');
+});
+
 Route::middleware([
     'auth', 'can:view,group'
 ])->get('/groups/{group}', 'GroupController@show');

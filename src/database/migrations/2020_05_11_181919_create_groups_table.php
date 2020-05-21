@@ -15,7 +15,6 @@ class CreateGroupsTable extends Migration
     {
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('owner_id');
             $table->string('slug');
             $table->string('name');
             $table->timestamps();

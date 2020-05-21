@@ -21,6 +21,7 @@ window.Vue = require('vue');
 
 Vue.component('task-list', require('./components/TaskList.vue').default);
 Vue.component('sidebar-group', require('./components/SidebarGroup.vue').default);
+Vue.component('create-group', require('./components/CreateGroup.vue').default);
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

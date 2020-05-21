@@ -17,7 +17,7 @@ class Group extends Model
      *
      * @var array
      */
-    protected $fillable = ['owner_id', 'slug', 'name'];
+    protected $fillable = ['slug', 'name'];
 
     protected static function boot()
     {
@@ -43,9 +43,11 @@ class Group extends Model
      *
      * @return \App\User
      */
-    public function owner()
+    public function scopeOwner($query)
     {
-        return $this->belongsTo(User::class, 'owner_id');
+        return $query->with(['users' => function ($query) {
+            $query->where('is_creator', true);
+        }]);
     }
 
     /**
@@ -53,9 +55,12 @@ class Group extends Model
      *
      * @return App\User
      */
-    public function joinedUsers()
+    public function users()
     {
-        return $this->belongsToMany(User::class)->withTimestamps();
+        return $this
+            ->belongsToMany(User::class)
+            ->withPivot('is_creator')
+            ->withTimestamps();
     }
 
     /**
@@ -65,8 +70,8 @@ class Group extends Model
      */
     public function createdBy(User $user)
     {
-        if (! $this->joinedUsers()->where('user_id', $user->id)->exists()) {
-            $this->joinedUsers()->attach($user->id, ['is_creator' => true]);
+        if (! $this->users()->where('user_id', $user->id)->exists()) {
+            $this->users()->attach($user->id, ['is_creator' => true]);
         }
     }
 

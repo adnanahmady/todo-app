@@ -8,7 +8,6 @@ use App\User;
 
 $factory->define(Group::class, function (Faker $faker) {
     return [
-        'owner_id' => factory(User::class)->create()->id,
         'name' => $faker->sentence(1, 6)
     ];
 });

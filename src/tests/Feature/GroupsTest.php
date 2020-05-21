@@ -20,7 +20,7 @@ class GroupsTest extends TestCase
         $this->be(factory(User::class)->create());
         $group = factory(Group::class)->create();
         $tasks = factory(Task::class, 3)->create(['group_id' => $group->id]);
-        $group->joinedUsers()->attach(auth()->user());
+        $group->users()->attach(auth()->user());
         $nonRelatedTask = factory(Task::class)->create();
 
         $response = $this->json(
@@ -53,19 +53,29 @@ class GroupsTest extends TestCase
         $this->withoutExceptionHandling();
         $this->be(factory(User::class)->create());
         $groups = factory(Group::class, 2)->create();
-        $inJoinedGroups = factory(Group::class, 2)->create();
-        $groups->map(function($group) {
-           $group->joinedUsers()->attach(auth()->user());
+        $notJoinedGroups = factory(Group::class, 2)->create();
+        $groups->each(function ($group) {
+            auth()->user()->groups()->attach($group->id);
         });
-
         $response = $this->json('GET', route('groups.list'));
 
         $this->assertEquals(200, $response->getStatusCode());
-        $groups->map(function($group) use ($response) {
-            $this->assertContains($group->name, $response);
-        });
-        $groups->map(function($group) use ($response) {
-            $this->assertNotContains($group->name, $response);
-        });
+
+        (function ($groups, $notJoinedGroups, $response) {
+            $groups->map(function ($group) use ($response) {
+                $this->assertStringContainsString($group->name, $response);
+            });
+            $notJoinedGroups->map(function ($group) use ($response) {
+                $this->assertStringNotContainsString($group->name, $response);
+            });
+        })($groups, $notJoinedGroups, json_encode($response->json()));
+    }
+
+    /** @test */
+    public function create_page_must_exists()
+    {
+        $this->be(factory(User::class)->create());
+        $this->get(route('groups.create'))
+            ->assertStatus(200);
     }
 }

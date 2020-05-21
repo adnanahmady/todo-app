@@ -16,4 +16,14 @@ class GroupController extends Controller
     {
         return view('groups.show', compact('group'));
     }
+
+    /**
+     * shows create group page
+     *
+     * @return View
+     */
+    public function create()
+    {
+        return view('groups.create');
+    }
 }

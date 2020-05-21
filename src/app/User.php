@@ -49,17 +49,9 @@ class User extends Authenticatable
      */
     public function groups()
     {
-        return $this->hasMany(Group::class, 'owner_id');
-    }
-
-    /**
-     * returns groups that user is joined in
-     *
-     * @return App\Group
-     */
-    public function joinedGroups()
-    {
-        return $this->belongsToMany(Group::class)->withTimestamps();
+        return $this->belongsToMany(Group::class)
+                    ->withPivot('is_creator')
+                    ->withTimestamps();
     }
 
     /**
@@ -72,6 +64,13 @@ class User extends Authenticatable
         return $this->hasMany(Task::class, 'owner_id');
     }
 
+    public function scopeOwnedGroups($query)
+    {
+        return $query->with(['groups' => function ($query) {
+             $query->where('is_creator', true);
+        }]);
+    }
+
     /**
      * checks if user is joined to group
      *
@@ -81,6 +80,6 @@ class User extends Authenticatable
      */
     public function doesJoinedTo(int $groupId): bool
     {
-        return $this->joinedGroups()->where('group_id', $groupId)->exists();
+        return $this->groups()->where('group_id', $groupId)->exists();
     }
 }

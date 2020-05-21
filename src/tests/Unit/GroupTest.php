@@ -34,11 +34,11 @@ class GroupTest extends TestCase
         $users = factory(User::class, 2)->create();
         $group = factory(Group::class)->create();
 
-        $group->joinedUsers()->attach($users[0]->id);
+        $group->users()->attach($users[0]->id);
 
-        $this->assertTrue($group->joinedUsers->contains($users[0]->id));
-        $this->assertTrue($users[0]->joinedGroups->contains($group->id));
-        $this->assertFalse($group->joinedUsers->contains($users[1]->id));
+        $this->assertTrue($group->users->contains($users[0]->id));
+        $this->assertTrue($users[0]->groups->contains($group->id));
+        $this->assertFalse($group->users->contains($users[1]->id));
     }
 
     /** @test */
@@ -48,6 +48,6 @@ class GroupTest extends TestCase
         $group = $user->groups()->create(['name' => 'Some name.']);
         $group->createdBy($user);
         $group->createdBy($user);
-        $this->assertCount(1, $group->joinedUsers()->get());
+        $this->assertCount(1, $group->users()->get());
     }
 }
