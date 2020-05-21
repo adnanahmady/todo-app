@@ -45,14 +45,14 @@
         <div class="card">
             <div class="card-header">
                 <div class="h4 card-title">Online Members</div>
-                <div class="card-body">
-                    <ul>
-                        <li 
-                            class="text-success"
-                            v-for="member in members"
-                            v-text="member.name"></li>
-                    </ul>
-                </div>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li 
+                        class="text-success"
+                        v-for="member in members"
+                        v-text="member.name"></li>
+                </ul>
             </div>
         </div>
     </div>

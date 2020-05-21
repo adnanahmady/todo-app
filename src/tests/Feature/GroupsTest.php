@@ -42,8 +42,30 @@ class GroupsTest extends TestCase
         $this->withoutExceptionHandling();
         $this->be(factory(User::class)->create());
         $data = ['name' => 'Some group'];
-        $response = $this->json('POST', route('groups.store', $data));
+        $response = $this->json('POST', route('groups.store'), $data);
         $this->assertEquals(201, $response->getStatusCode());
         $this->assertDatabaseHas('group_user', ['is_creator' => true]);
+    }
+
+    /** @test */
+    public function user_can_see_its_joined_groups()
+    {
+        $this->withoutExceptionHandling();
+        $this->be(factory(User::class)->create());
+        $groups = factory(Group::class, 2)->create();
+        $inJoinedGroups = factory(Group::class, 2)->create();
+        $groups->map(function($group) {
+           $group->joinedUsers()->attach(auth()->user());
+        });
+
+        $response = $this->json('GET', route('groups.list'));
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $groups->map(function($group) use ($response) {
+            $this->assertContains($group->name, $response);
+        });
+        $groups->map(function($group) use ($response) {
+            $this->assertNotContains($group->name, $response);
+        });
     }
 }

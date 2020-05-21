@@ -8,6 +8,13 @@ use App\Http\Controllers\Controller;
 
 class GroupController extends Controller
 {
+    public function index()
+    {
+        return response()->json(
+            auth()->user()->joinedGroups,
+            200
+        );
+    }
     public function show(Group $group)
     {
         $group->load('tasks');

@@ -14,8 +14,10 @@
                         </div>
                     @endif
                 </div>
-                Dashboard
             </div>
+        </div>
+        <div class="col-md-4">
+            <sidebar-group title="Groups"></sidebar-group>
         </div>
     </div>
 </div>
