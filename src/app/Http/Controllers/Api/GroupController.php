@@ -11,7 +11,7 @@ class GroupController extends Controller
 {
     /**
      * shows all user joined groups
-     * 
+     *
      * @return Illuminate\Http\Response
      */
     public function index()
@@ -33,9 +33,11 @@ class GroupController extends Controller
      */
     public function show(Group $group)
     {
-        $group->load('tasks');
+        $group->load(['tasks' => function ($query) {
+            $query->select('id', 'group_id', 'body', 'finish_date');
+        }]);
 
-        return response()->json($group->tasks->pluck('body'), 200);
+        return response()->json($group->tasks, 200);
     }
 
     /**

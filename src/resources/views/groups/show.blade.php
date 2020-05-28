@@ -4,7 +4,7 @@
 <div id="app" class="container">
     <div class="row">
         <div class="col">
-            <task-list :group="{{ $group }}"></task-list>
+            <group-app :group="{{ $group }}"></group-app>
         </div>
     </div>
 </div>

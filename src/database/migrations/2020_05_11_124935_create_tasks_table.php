@@ -18,6 +18,7 @@ class CreateTasksTable extends Migration
             $table->unsignedBigInteger('owner_id');
             $table->unsignedBigInteger('group_id');
             $table->string('body');
+            $table->timestamp('finish_date')->nullable();
             $table->timestamps();
         });
     }

@@ -1,141 +1,71 @@
 <template>
-<div class="row">
-    <div class="col col-md-8">
-        <div class="form-group">
-            <input 
-                class="form-control" 
-                v-model="body" 
-                @keydown.enter = "newTask" 
-                @keydown = "itIsTyping"
-                type="text">
-        </div>
-        <div class="form-group">
-            <span
-                class="text-info"
-                v-if="isTyping"
-                v-text="typeNote"
-            ></span>
-        </div>
-        <div class="form-group d-flex">
-            <button 
-                @click="newTask" 
-                class="btn position-relative w-50 mx-auto btn-primary"
-            >
-                <loader
-                    class="position-absolute ml-2"
-                    style="left: 0px" 
-                    :isLoading="isLoading"
-                ></loader>
-                <span class="mx-auto">
-                    <i class="fa fa-pencil" aria-hidden="true"></i>
-                    New Task
-                </span>
-            </button>
-        </div>
-        
-        <div class="list-group">
-            <div 
-                class="list-group-item list-group-item-action list-group-item-success"
-                v-for="task in tasks"
-                v-text="task"
-            ></div>
-        </div>
-    </div>
-    <div class="col col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <div class="h4 card-title">Online Members</div>
-            </div>
-            <div class="card-body">
-                <ul>
-                    <li 
-                        class="text-success"
-                        v-for="member in members"
-                        v-text="member.name"></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
+    <ul class="list-group">
+        <li 
+            class="list-group-item list-group-item-action"
+            :class="isDone(task)"
+            :style="taskStyle(task)"
+            v-for="task in tasks"
+            @click="doneTask(task)"
+        >
+            <i 
+                class="fa fa-check"
+                aria-hidden="true" 
+                v-if="!! task.finish_date"></i>
+            <i 
+                class="fa fa-circle-o"
+                aria-hidden="true" 
+                v-else></i>
+            <span class="text-dark" v-text="task.body"></span>
+        </li>
+    </ul>
 </template>
 
 <script>
-    import Loader from './Loader.vue';
-
     export default {
-        props: ['group'],
-        components: { Loader },
-        data() {
-            return {
-                tasks: [],
-                isLoading: false,
-                isTyping: undefined,
-                typingTimer: undefined,
-                body: '',
-                members: []
-            };
-        },
-
-        created() {
-            axios
-                .get('/api/groups/'+this.group.id)
-                .then(response => (this.tasks = response.data));
-            
-            this.channel
-                .here(users => {
-                    this.members = users;
-                })
-                .joining(user => {
-                    this.members.push(user);
-                })
-                .leaving(user => {
-                    this.members.splice(this.members.indexOf(user));
-                })
-                .listen('NewTaskDidCreateEvent', ({user, task}) => {
-                    this.isTyping = undefined;
-                    this.tasks.push(task.body);
-                })
-                .listenForWhisper('typing', (e) => {
-                    this.isTyping = e;
-
-                    if (this.typingTimer) clearTimeout(this.typingTimer);
-
-                    this.typingTimer = setTimeout(() => this.isTyping = undefined, 3000);
-                });
-        },
-
-        computed: {
-            isBodyEmpty() {
-                const body = this.body.trim();
-
-                return (body.length == 0) ? true : false;
+        props: {
+            tasks: {
+                type: Array,
+                require: true
             },
 
-            typeNote() {
-                return this.isTyping.name + ' is typing...';
+            group: {
+                type: Object,
+                require: true
             },
-            
-            channel() {
-                return window.Echo.join('groups.'+this.group.id);
-            }
         },
-        
+
         methods: {
-            itIsTyping() {
-                    this.channel.whisper('typing', {name: window.App.user.name});
+            taskStyle(task) {
+                return {
+                    textDecoration: !! task.finish_date && 'line-through',
+                    cursor: ! task.finish_date && 'pointer'
+                };
             },
-            newTask() {
-                if (this.isBodyEmpty) return;
-                this.isLoading = true;
-                this.isTyping = undefined;
-                axios.post('/api/groups/'+this.group.id+'/tasks', { body: this.body })
-                    .then(() => {
-                        this.tasks.push(this.body);
-                        this.body = '';
-                        this.isLoading = false;
-                    })
-                    .catch((err) => { this.isLoading = false });
-            }
+            isDone(task) {
+                return (
+                    "list-group-item-" +
+                    (!! task.finish_date ? 'success' : 'light')
+                );
+            },
+
+            async doneTask(task) {
+                try {
+                    const index = this.tasks.indexOf(task);
+                    const {data: {data: newTask}} = await axios.put(
+                        `/api/groups/${this.group.id}/tasks/${task.id}`
+                    );
+                    
+                    this.$emit('doneTask', {index, newTask});
+                }
+                catch (ex) 
+                {
+                    if (ex.response && ex.response.message) {
+                        console.log(ex.response.message);
+                    } else {
+                        console.log(ex.message);
+                    }
+                }
+            },
         }
     }
 </script>

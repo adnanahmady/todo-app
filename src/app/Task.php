@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 /**
  * Class: Task
@@ -16,7 +17,21 @@ class Task extends Model
      *
      * @var array
      */
-    protected $fillable = ['group_id', 'body', 'owner_id'];
+    protected $fillable = [
+        'group_id',
+        'body',
+        'owner_id',
+        'finish_date'
+    ];
+
+    /**
+     * casts columns to date format
+     *
+     * @var array
+     */
+    protected $dates = [
+        'finish_date'
+    ];
 
     /**
      * returns the tasks writer
@@ -36,5 +51,23 @@ class Task extends Model
     public function group()
     {
         return $this->belongsTo(Group::class, 'group_id');
+    }
+
+    /**
+     * checks if task is finished
+     *
+     * @return bool
+     */
+    public function isDone()
+    {
+        return !! $this->finish_date;
+    }
+
+    /**
+     * marks task as finished
+     */
+    public function done()
+    {
+        $this->update(['finish_date' => Carbon::now()]);
     }
 }

@@ -31,9 +31,37 @@ class GroupsTest extends TestCase
             )
         )->json();
         $tasks->map(function ($task) use ($response) {
-            $this->assertContains($task['body'], $response);
+            $this->assertStringContainsString(
+                $task['body'], 
+                json_encode($response)
+            );
         });
         $this->assertNotContains($nonRelatedTask->body, $response);
+    }
+
+    /** @test */
+    public function every_task_return_must_have_done_status_with()
+    {
+        $this->withoutExceptionHandling();
+        $this->be(factory(User::class)->create());
+        $group = factory(Group::class)->create();
+        $task  = factory(Task::class)->create(['group_id' => $group->id]);
+        $group->users()->attach(auth()->user());
+        
+        $response = $this->json(
+            'GET',
+            route(
+                'groups.show',
+                ['group' => $group->id]
+            )
+        )->json();
+
+        (function ($response) {
+            $this->assertArrayHasKey('id', $response);
+            $this->assertArrayHasKey('group_id', $response);
+            $this->assertArrayHasKey('body', $response);
+            $this->assertArrayHasKey('finish_date', $response);
+        })(current($response));
     }
 
     /** @test */

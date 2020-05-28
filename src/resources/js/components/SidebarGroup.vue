@@ -2,13 +2,14 @@
 <div class="card">
     <div class="card-header h4" v-text="title"></div>
     <div class="card-body">
-        <ul class="list-group" v-for="(group, index) in groups" key="index">
+        <div class="list-group">
             <a
                 class="list-group-item list-group-item-action list-group-item-info"
                 v-text="group.name"
                 :href="`/groups/`+group.id"
+                v-for="(group, index) in groups"
             ></a>
-        </ul>
+        </div>
     </div>
     <div class="card-footer">
             <a
